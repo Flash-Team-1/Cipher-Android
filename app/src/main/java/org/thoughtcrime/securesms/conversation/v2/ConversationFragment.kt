@@ -2727,16 +2727,16 @@ class ConversationFragment :
       isViewOnce = isViewOnce
     )
 
-      disposables += send
-    .doOnSubscribe {
-      if (clearCompose) {
-        AppDependencies.typingStatusSender.onTypingStopped(args.threadId)
-        composeTextEventsListener?.typingStatusEnabled = false
-        composeText.setText("")
-        composeTextEventsListener?.typingStatusEnabled = true
-        attachmentManager.clear(Glide.with(this@ConversationFragment), false)
-        inputPanel.clearQuote()
-      }
+    disposables += send
+      .doOnSubscribe {
+        if (clearCompose) {
+          AppDependencies.typingStatusSender.onTypingStopped(args.threadId)
+          composeTextEventsListener?.typingStatusEnabled = false
+          composeText.setText("")
+          composeTextEventsListener?.typingStatusEnabled = true
+          attachmentManager.clear(Glide.with(this@ConversationFragment), false)
+          inputPanel.clearQuote()
+        }
       scrollToPositionDelegate.markListCommittedVersion()
 
       // 🎬 شغّل الأنيميشن (فقط للرسائل الفورية، ليس المجدولة)
@@ -2773,25 +2773,20 @@ private fun playSendAnimation(scheduled: Boolean = false) {
   if (sendBtn.width == 0 || recycler.width == 0) return
   if (animView.width == 0 || animView.height == 0) return
 
-  // إحداثيات زر الإرسال على الشاشة
   val sendLoc = IntArray(2)
   sendBtn.getLocationOnScreen(sendLoc)
 
-  // إحداثيات animView على الشاشة
   val animLoc = IntArray(2)
   animView.getLocationOnScreen(animLoc)
 
-  // إحداثيات زر الإرسال بالنسبة لـ animView
   val fromX = (sendLoc[0] - animLoc[0]).toFloat() + sendBtn.width / 2f
   val fromY = (sendLoc[1] - animLoc[1]).toFloat() + sendBtn.height / 2f
 
-  // إحداثيات الهدف (أعلى يمين قائمة الرسائل — جهة الرسائل الصادرة)
   val recyclerLoc = IntArray(2)
   recycler.getLocationOnScreen(recyclerLoc)
   val toX = (recyclerLoc[0] - animLoc[0]).toFloat() + recycler.width - 90f
   val toY = (recyclerLoc[1] - animLoc[1]).toFloat() + recycler.paddingTop + 80f
 
-  // اهتزاز خفيف للزر
   sendBtn.animate()
     .scaleX(0.85f).scaleY(0.85f)
     .setDuration(90)
@@ -2804,7 +2799,7 @@ private fun playSendAnimation(scheduled: Boolean = false) {
     .start()
 
   animView.start(fromX, fromY, toX, toY)
-}  
+}
   
   private fun onSendComplete() {
     if (isDetached || activity?.isFinishing == true) {
