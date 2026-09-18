@@ -410,6 +410,7 @@ import java.util.concurrent.ExecutionException
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 import org.signal.core.ui.R as CoreUiR
+import android.view.animation.OvershootInterpolator //Added to send animation
 
 /**
  * A single unified fragment for Conversations.
@@ -2726,30 +2727,85 @@ class ConversationFragment :
       isViewOnce = isViewOnce
     )
 
-    disposables += send
-      .doOnSubscribe {
-        if (clearCompose) {
-          AppDependencies.typingStatusSender.onTypingStopped(args.threadId)
-          composeTextEventsListener?.typingStatusEnabled = false
-          composeText.setText("")
-          composeTextEventsListener?.typingStatusEnabled = true
-          attachmentManager.clear(Glide.with(this@ConversationFragment), false)
-          inputPanel.clearQuote()
-        }
-        scrollToPositionDelegate.markListCommittedVersion()
+      disposables += send
+    .doOnSubscribe {
+      if (clearCompose) {
+        AppDependencies.typingStatusSender.onTypingStopped(args.threadId)
+        composeTextEventsListener?.typingStatusEnabled = false
+        composeText.setText("")
+        composeTextEventsListener?.typingStatusEnabled = true
+        attachmentManager.clear(Glide.with(this@ConversationFragment), false)
+        inputPanel.clearQuote()
       }
-      .subscribeBy(
-        onComplete = {
-          onSendComplete()
-          afterSendComplete()
-        },
-        onError = {
-          Log.w(TAG, "Error received during send!", it)
-          toast(R.string.ConversationActivity_error_sending_media)
-        }
-      )
-  }
+      scrollToPositionDelegate.markListCommittedVersion()
 
+      // 🎬 شغّل الأنيميشن (فقط للرسائل الفورية، ليس المجدولة)
+      playSendAnimation(scheduled = scheduledDate != -1L)
+    }
+    .subscribeBy(
+      onComplete = {
+        onSendComplete()
+        afterSendComplete()
+      },
+      onError = {
+        Log.w(TAG, "Error received during send!", it)
+        toast(R.string.ConversationActivity_error_sending_media)
+      }
+    )
+}
+
+// ============================================
+// 🎬 Send Message Animation
+// ============================================
+
+private fun playSendAnimation(scheduled: Boolean = false) {
+  if (scheduled) return
+  if (inputPanel.isRecordingInLockedMode) return
+  if (inputPanel.inEditMessageMode()) return
+
+  if (!isAdded || view == null) return
+  if (!animationsAllowed) return
+
+  val animView = view?.findViewById<SendMessageAnimationView>(R.id.send_message_animation) ?: return
+  val sendBtn = sendButton
+  val recycler = binding.conversationItemRecycler
+
+  if (sendBtn.width == 0 || recycler.width == 0) return
+  if (animView.width == 0 || animView.height == 0) return
+
+  // إحداثيات زر الإرسال على الشاشة
+  val sendLoc = IntArray(2)
+  sendBtn.getLocationOnScreen(sendLoc)
+
+  // إحداثيات animView على الشاشة
+  val animLoc = IntArray(2)
+  animView.getLocationOnScreen(animLoc)
+
+  // إحداثيات زر الإرسال بالنسبة لـ animView
+  val fromX = (sendLoc[0] - animLoc[0]).toFloat() + sendBtn.width / 2f
+  val fromY = (sendLoc[1] - animLoc[1]).toFloat() + sendBtn.height / 2f
+
+  // إحداثيات الهدف (أعلى يمين قائمة الرسائل — جهة الرسائل الصادرة)
+  val recyclerLoc = IntArray(2)
+  recycler.getLocationOnScreen(recyclerLoc)
+  val toX = (recyclerLoc[0] - animLoc[0]).toFloat() + recycler.width - 90f
+  val toY = (recyclerLoc[1] - animLoc[1]).toFloat() + recycler.paddingTop + 80f
+
+  // اهتزاز خفيف للزر
+  sendBtn.animate()
+    .scaleX(0.85f).scaleY(0.85f)
+    .setDuration(90)
+    .withEndAction {
+      sendBtn.animate().scaleX(1f).scaleY(1f)
+        .setDuration(140)
+        .setInterpolator(OvershootInterpolator(1.8f))
+        .start()
+    }
+    .start()
+
+  animView.start(fromX, fromY, toX, toY)
+}  
+  
   private fun onSendComplete() {
     if (isDetached || activity?.isFinishing == true) {
       return
