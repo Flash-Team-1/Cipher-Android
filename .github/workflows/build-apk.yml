@@ -1,0 +1,101 @@
+name: Build Signal APK (Ultimate)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'نوع البناء (debug/release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+    - name: سحب الكود
+      uses: actions/checkout@v7.0.1
+      with:
+        submodules: true
+        lfs: true
+        fetch-depth: 1
+
+    - name: إعداد JDK 21
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 21
+
+    - name: التحقق من Gradle Wrapper
+      uses: gradle/actions/wrapper-validation@v6
+
+    # ✅ إضافة مساحة تبادل 12 جيجابايت (للتأكد)
+    - name: إعداد مساحة تبادل كبيرة
+      run: |
+        sudo swapoff -a || true
+        sudo dd if=/dev/zero of=/swapfile bs=1M count=12288 status=progress
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        echo "✅ تم إضافة 12 جيجابايت مساحة تبادل"
+        free -h
+
+    - name: إعداد Gradle مع كاش أساسي
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: ${{ !startsWith(github.ref, 'refs/heads/8.') }}
+        cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+        cache-provider: basic
+
+    # ✅ بناء APK مباشرة بدون تجزئة أو تعقيدات
+    - name: بناء APK مباشرة
+      env:
+        SIGNAL_BUILD_CACHE_URL: ${{ secrets.SIGNAL_BUILD_CACHE_URL }}
+        SIGNAL_BUILD_CACHE_USER: ${{ secrets.SIGNAL_BUILD_CACHE_USER }}
+        SIGNAL_BUILD_CACHE_PASSWORD: ${{ secrets.SIGNAL_BUILD_CACHE_PASSWORD }}
+        SIGNAL_BUILD_CACHE_PUSH: ${{ startsWith(github.ref, 'refs/heads/8.') }}
+      run: |
+        if [ "${{ github.event.inputs.build_type }}" == "release" ]; then
+          ./gradlew assemblePlayProdRelease \
+            --no-daemon \
+            --max-workers=1 \
+            --no-parallel \
+            --stacktrace
+        else
+          ./gradlew assemblePlayProdDebug \
+            --no-daemon \
+            --max-workers=1 \
+            --no-parallel \
+            --stacktrace
+        fi
+
+    - name: رفع APK
+      uses: actions/upload-artifact@v7
+      with:
+        name: signal-${{ github.event.inputs.build_type || 'debug' }}-apk
+        path: |
+          **/build/outputs/apk/playProd/${{ github.event.inputs.build_type || 'debug' }}/*.apk
+          **/build/outputs/apk/*/debug/*.apk
+        if-no-files-found: warn
+
+    - name: رفع التقارير
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: reports
+        path: |
+          **/build/reports
+          **/build/test-results
+          **/build/outputs/logs
+        if-no-files-found: ignore
