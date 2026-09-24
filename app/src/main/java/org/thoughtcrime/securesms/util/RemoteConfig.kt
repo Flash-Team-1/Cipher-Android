@@ -675,7 +675,7 @@ object RemoteConfig {
   @JvmStatic
   val contactSharingV2: Boolean by remoteBoolean(
     key = "android.contactSharingV2",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -695,13 +695,13 @@ object RemoteConfig {
 
   private val groupRecommendedLimit: Int by remoteInt(
     key = "global.groupsv2.maxGroupSize",
-    defaultValue = 151,
+    defaultValue = 1001,
     hotSwappable = true
   )
 
   private val groupHardLimit: Int by remoteInt(
     key = "global.groupsv2.groupSizeHardLimit",
-    defaultValue = 1001,
+    defaultValue = 2001,
     hotSwappable = true
   )
 
@@ -710,7 +710,7 @@ object RemoteConfig {
   @get:JvmName("pinnedChatLimit")
   val pinnedChatLimit: Int by remoteInt(
     key = "global.pinnedChatLimit",
-    defaultValue = 4,
+    defaultValue = 20,
     hotSwappable = true
   )
 
@@ -719,7 +719,7 @@ object RemoteConfig {
   @get:JvmName("maxLinkedDevices")
   val maxLinkedDevices: Int by remoteInt(
     key = "global.maxLinkedDevices",
-    defaultValue = 5,
+    defaultValue = 10,
     hotSwappable = true
   )
 
@@ -740,12 +740,7 @@ object RemoteConfig {
     key = INTERNAL_USER_KEY,
     hotSwappable = true
   ) { value ->
-    when {
-      internalUserDisabled -> false
-      underTest -> value.asBoolean(false)
-      Environment.isInternal() -> true
-      else -> value.asBoolean(false)
-    }
+    true // ✅ دائمًا true لتفعيل جميع ميزات Labs وأدوات المطورين
   }
 
   /** The raw client expiration JSON string.  */
@@ -779,7 +774,7 @@ object RemoteConfig {
     key = "android.share.limit",
     hotSwappable = true
   ) { value ->
-    val limit = value.asInteger(5)
+    val limit = value.asInteger(50)
     SelectionLimits(limit, limit)
   }
 
@@ -896,7 +891,7 @@ object RemoteConfig {
   @get:JvmName("maxGroupCallRingSize")
   val maxGroupCallRingSize: Long by remoteLong(
     key = "global.calling.maxGroupCallRingSize",
-    defaultValue = 16,
+    defaultValue = 32,
     hotSwappable = true
   )
 
@@ -916,7 +911,7 @@ object RemoteConfig {
    */
   val storiesTextFunctions: Boolean by remoteBoolean(
     key = "android.stories.text.functions",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = false
   )
 
@@ -937,7 +932,7 @@ object RemoteConfig {
   /** Prefetch count for stories from a given user. */
   val storiesAutoDownloadMaximum: Int by remoteInt(
     key = "android.stories.autoDownloadMaximum",
-    defaultValue = 2,
+    defaultValue = 5,
     hotSwappable = false
   )
 
@@ -980,7 +975,7 @@ object RemoteConfig {
   /** If the user has more than this number of contacts, the CDS request will certainly be rejected, so we must fail. */
   val cdsHardLimit: Int by remoteInt(
     key = "android.cds.hardLimit",
-    defaultValue = 50000,
+    defaultValue = 100000,
     hotSwappable = true
   )
 
@@ -1020,7 +1015,7 @@ object RemoteConfig {
   /** Maximum number of attachments allowed to be sent/received.  */
   val maxAttachmentCount: Int by remoteInt(
     key = "android.attachments.maxCount",
-    defaultValue = 32,
+    defaultValue = 100,
     hotSwappable = true
   )
 
@@ -1037,7 +1032,7 @@ object RemoteConfig {
   /** Maximum attachment ciphertext size when sending in bytes  */
   val maxAttachmentSizeBytes: Long by remoteLong(
     key = "global.attachments.maxBytes",
-    defaultValue = 100.mebiBytes.inWholeBytes,
+    defaultValue = 500.mebiBytes.inWholeBytes,
     hotSwappable = true
   )
 
@@ -1046,7 +1041,7 @@ object RemoteConfig {
   @get:JvmName("videoTranscodeTargetSizeBytes")
   val videoTranscodeTargetSizeBytes: Long by remoteLong(
     key = "global.videoAttachments.transcodeTargetBytes",
-    defaultValue = 100.mebiBytes.inWholeBytes,
+    defaultValue = 500.mebiBytes.inWholeBytes,
     hotSwappable = true
   )
 
@@ -1055,7 +1050,7 @@ object RemoteConfig {
   @get:JvmName("maxSourceTranscodeVideoSizeBytes")
   val maxSourceTranscodeVideoSizeBytes: Long by remoteLong(
     key = "android.media.sourceTranscodeVideo.maxBytes",
-    defaultValue = 1.gibiBytes.inWholeBytes,
+    defaultValue = 2.gibiBytes.inWholeBytes,
     hotSwappable = true
   )
 
@@ -1152,7 +1147,7 @@ object RemoteConfig {
   @get:JvmName("allowAudioRemuxing")
   val allowAudioRemuxing: Boolean by remoteBoolean(
     key = "android.media.audioRemux.1",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = false
   )
 
@@ -1161,7 +1156,7 @@ object RemoteConfig {
   @get:JvmName("startVideoRecordAt1x")
   val startVideoRecordAt1x: Boolean by remoteBoolean(
     key = "android.media.videoCaptureDefaultZoom",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1239,7 +1234,7 @@ object RemoteConfig {
   @JvmStatic
   val inlinePinnedChats: Boolean by remoteBoolean(
     key = "android.inlinePinnedChats.2",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1247,7 +1242,7 @@ object RemoteConfig {
   @get:JvmName("useMessageSendRestFallback")
   val useMessageSendRestFallback: Boolean by remoteBoolean(
     key = "android.useMessageSendRestFallback.2",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1260,7 +1255,7 @@ object RemoteConfig {
   @get:JvmName("useIndividualSendJobV2")
   val useIndividualSendJobV2: Boolean by remoteBoolean(
     key = "android.useIndividualSendJobV2.4",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1288,7 +1283,7 @@ object RemoteConfig {
   @get:JvmName("maxEnvelopeSizeBytes")
   val maxEnvelopeSizeBytes: Long by remoteLong(
     key = "android.maxEnvelopeSizeBytes",
-    defaultValue = 256.kibiBytes.inWholeBytes,
+    defaultValue = 512.kibiBytes.inWholeBytes,
     hotSwappable = true
   )
 
@@ -1297,7 +1292,7 @@ object RemoteConfig {
   @get:JvmName("maxIncrementalMacsPerEnvelope")
   val maxIncrementalMacsPerEnvelope: Int by remoteInt(
     key = "global.maxIncrementalMacsPerEnvelope",
-    defaultValue = 10,
+    defaultValue = 50,
     hotSwappable = true
   )
 
@@ -1305,7 +1300,7 @@ object RemoteConfig {
   @get:JvmName("backupsMegaphone")
   val backupsMegaphone: Boolean by remoteBoolean(
     key = "android.backupsMegaphone.4",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1313,7 +1308,7 @@ object RemoteConfig {
   @get:JvmName("pinLimit")
   val pinLimit: Int by remoteInt(
     key = "global.pinnedMessageLimit",
-    defaultValue = 3,
+    defaultValue = 20,
     hotSwappable = true
   )
 
@@ -1394,7 +1389,7 @@ object RemoteConfig {
   @get:JvmName("enableSoftwareVp9Decode")
   val enableSoftwareVp9Decode: Boolean by remoteBoolean(
     key = "android.calling.enableSoftwareVp9Decode",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1427,7 +1422,7 @@ object RemoteConfig {
   @get:JvmName("enableGroupCallVp9")
   val enableGroupCallVp9: Boolean by remoteBoolean(
     key = "android.calling.enableGroupCallVp9",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1438,7 +1433,7 @@ object RemoteConfig {
   @get:JvmName("upgradeBackupsMegaphone")
   val upgradeBackupsMegaphone: Boolean by remoteBoolean(
     key = "android.upgradeBackupsMegaphone",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = false
   )
 
@@ -1449,7 +1444,7 @@ object RemoteConfig {
   @get:JvmName("localPlaintextExport")
   val localPlaintextExport: Boolean by remoteBoolean(
     key = "android.localPlaintextExport.3",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = false
   )
 
@@ -1460,7 +1455,7 @@ object RemoteConfig {
   @get:JvmName("exactAlarm")
   val exactAlarm: Boolean by remoteBoolean(
     key = "android.exactAlarm",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1471,7 +1466,7 @@ object RemoteConfig {
   @get:JvmName("screenSharing")
   val screenSharing: Boolean by remoteBoolean(
     key = "android.calling.screenSharing",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1507,14 +1502,14 @@ object RemoteConfig {
   @get:JvmName("useJetPackTelecom")
   val useJetPackTelecom: Boolean by remoteBoolean(
     key = "android.calling.useJetPackTelecom",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = false
   )
 
   /** The minimum SDK version required to enable Jetpack telecom integration */
   val telecomMinSdkVersion: Int by remoteInt(
     key = "android.calling.telecomMinSdkVersion",
-    defaultValue = 37,
+    defaultValue = 21,
     hotSwappable = false
   )
 
@@ -1523,7 +1518,7 @@ object RemoteConfig {
   @get:JvmName("enableSvc")
   val enableSvc: Boolean by remoteBoolean(
     key = "android.calling.enableSvc",
-    defaultValue = false,
+    defaultValue = true,
     hotSwappable = true
   )
 
@@ -1564,7 +1559,7 @@ object RemoteConfig {
   /** The maximum number of authenticator apps a user can have on their account. */
   val maxTotpApps: Int by remoteInt(
     key = "global.maxTotpApps",
-    defaultValue = 2,
+    defaultValue = 10,
     hotSwappable = true
   )
 
@@ -1574,7 +1569,7 @@ object RemoteConfig {
    */
   val maxMfaKeys: Int by remoteInt(
     key = "global.maxMfaKeys",
-    defaultValue = 10,
+    defaultValue = 20,
     hotSwappable = true
   )
   // endregion
