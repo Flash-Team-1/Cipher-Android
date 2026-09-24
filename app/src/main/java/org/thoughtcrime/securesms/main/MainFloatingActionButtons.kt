@@ -8,9 +8,14 @@ package org.thoughtcrime.securesms.main
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.height
@@ -29,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
@@ -231,14 +237,30 @@ private fun MainFloatingActionButton(
   shadowElevation: Dp = 4.dp,
   colors: IconButtonColors = IconButtonDefaults.filledTonalIconButtonColors()
 ) {
+  // مصدر التفاعل لمراقبة حالة الضغط
+  val interactionSource = remember { MutableInteractionSource() }
+  val isPressed by interactionSource.collectIsPressedAsState()
+
+  // أنيميشن النبض: تصغير سريع عند الضغط، ثم رجوع بحركة نابضة (Bouncy Spring) عند الإفلات
+  val scale by animateFloatAsState(
+    targetValue = if (isPressed) 0.85f else 1f,
+    animationSpec = spring(
+      dampingRatio = Spring.DampingRatioMediumBouncy,
+      stiffness = Spring.StiffnessMedium
+    ),
+    label = "fabBounceScale"
+  )
+
   FilledTonalIconButton(
     onClick = onClick,
     shape = RoundedCornerShape(18.dp),
     modifier = modifier
       .size(ACTION_BUTTON_SIZE)
+      .scale(scale)
       .shadow(shadowElevation, RoundedCornerShape(18.dp)),
     enabled = true,
-    colors = colors
+    colors = colors,
+    interactionSource = interactionSource
   ) {
     icon()
   }
