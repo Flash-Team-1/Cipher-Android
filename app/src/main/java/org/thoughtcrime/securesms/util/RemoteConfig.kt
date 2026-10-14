@@ -740,12 +740,7 @@ object RemoteConfig {
     key = INTERNAL_USER_KEY,
     hotSwappable = true
   ) { value ->
-    when {
-      internalUserDisabled -> false
-      underTest -> value.asBoolean(false)
-      Environment.isInternal() -> true
-      else -> value.asBoolean(false)
-    }
+    true // دائمًا true لتفعيل جميع ميزات Labs وأدوات المطورين
   }
 
   /** The raw client expiration JSON string.  */
