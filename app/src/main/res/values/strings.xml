@@ -4523,6 +4523,8 @@
     <string name="RecipientBottomSheet_remove">Remove</string>
 
     <string name="GroupRecipientListItem_admin">Admin</string>
+    <string name="GroupRecipientListItem_owner">Owner</string>
+    <string name="GroupSettings_created_by">Created by %1$s at %2$s</string>
     <!-- Button text to approve a user that has requested to join a group -->
     <string name="GroupRecipientListItem_approve_description">Approve</string>
     <string name="GroupRecipientListItem_deny_description">Deny</string>
