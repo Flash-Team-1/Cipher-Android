@@ -372,8 +372,17 @@ class ConversationSettingsRepository(
     val selfMemberLevel = record.memberLevel(self)
     val members = record.members
       .map { Recipient.resolved(it) }
-      .map { GroupMember(recipient = it, isAdmin = record.isAdmin(it)) }
+      .map { GroupMember(recipient = it, isAdmin = record.isAdmin(it), isOwner = record.isOwner(it)) }
       .sortedWith(MEMBER_ORDER)
+
+    val ownerName = members.firstOrNull { it.isOwner }?.recipient?.getDisplayName(AppDependencies.application)
+    val createdAt = if (groupId.isV2) {
+      SignalDatabase.threads.getThreadIdIfExistsFor(recipient.id)
+        .takeIf { it > 0 }
+        ?.let { SignalDatabase.messages.getOldestMessageTimestamp(it) }
+    } else {
+      null
+    }
 
     val pendingMemberCount = if (record.hasV2GroupProperties) {
       record.requireV2GroupProperties().decryptedGroup.pendingMembers.size
@@ -387,6 +396,8 @@ class ConversationSettingsRepository(
       description = record.description,
       descriptionShouldLinkify = RecipientUtil.isMessageRequestAccepted(recipient),
       members = members,
+      ownerName = ownerName,
+      createdAt = createdAt,
       isSelfAdmin = record.isAdmin(self),
       canEditGroupAttributes = record.isActive && record.attributesAccessControl.allows(selfMemberLevel),
       canAddMembers = record.isActive && record.membershipAdditionAccessControl.allows(selfMemberLevel),
@@ -416,6 +427,8 @@ class ConversationSettingsRepository(
     val description: String?,
     val descriptionShouldLinkify: Boolean,
     val members: List<GroupMember>,
+    val ownerName: String?,
+    val createdAt: Long?,
     val isSelfAdmin: Boolean,
     val canEditGroupAttributes: Boolean,
     val canAddMembers: Boolean,
