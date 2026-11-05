@@ -1411,6 +1411,19 @@ class GroupTable(context: Context?, databaseHelper: SignalDatabase?) :
       }
     }
 
+    /**
+     * The owner is the member who created the group: an administrator who was in the group at revision 0.
+     * Signal's protocol has no explicit owner, so this is inferred from the group's initial state.
+     */
+    fun isOwner(recipient: Recipient): Boolean {
+      val aci = recipient.aci
+      if (!aci.isPresent) return false
+
+      return decryptedGroup.members.any {
+        it.role == Member.Role.ADMINISTRATOR && it.joinedAtRevision == 0 && it.aciBytes == aci.get().toByteString()
+      }
+    }
+
     fun getAdmins(members: List<Recipient>): List<Recipient> {
       return members.stream().filter { recipient: Recipient -> isAdmin(recipient) }.collect(Collectors.toList())
     }
