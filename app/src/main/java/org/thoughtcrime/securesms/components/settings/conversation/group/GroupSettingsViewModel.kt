@@ -431,6 +431,8 @@ class GroupSettingsViewModel(
       title = details.title,
       description = details.description,
       descriptionShouldLinkify = details.descriptionShouldLinkify,
+      ownerName = details.ownerName,
+      createdAt = details.createdAt,
       groupLinkEnabled = details.groupLinkEnabled,
       membershipCountDescription = details.membershipCountDescription,
       legacyGroupState = details.legacyGroupState,
