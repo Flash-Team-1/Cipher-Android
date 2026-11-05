@@ -203,6 +203,10 @@ class GroupRecord(
     return hasV2GroupProperties && requireV2GroupProperties().isAdmin(recipient)
   }
 
+  fun isOwner(recipient: Recipient): Boolean {
+    return hasV2GroupProperties && requireV2GroupProperties().isOwner(recipient)
+  }
+
   fun memberLevel(recipient: Recipient): GroupTable.MemberLevel {
     return if (hasV2GroupProperties) {
       val memberLevel = requireV2GroupProperties().memberLevel(recipient.serviceId)
