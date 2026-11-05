@@ -36,6 +36,8 @@ data class GroupSettingsState(
   val title: String = "",
   val description: String? = null,
   val descriptionShouldLinkify: Boolean = false,
+  val ownerName: String? = null,
+  val createdAt: Long? = null,
   val membershipCountDescription: String = "",
   val allMembers: List<GroupMember> = emptyList(),
   val membersExpanded: Boolean = false,
