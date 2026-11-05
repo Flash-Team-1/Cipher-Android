@@ -10,5 +10,6 @@ import org.thoughtcrime.securesms.recipients.Recipient
 /** A member of the group, flattened into something the screen can render directly. */
 data class GroupMember(
   val recipient: Recipient,
-  val isAdmin: Boolean
+  val isAdmin: Boolean,
+  val isOwner: Boolean = false
 )
