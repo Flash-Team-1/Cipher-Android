@@ -1767,6 +1767,18 @@ open class MessageTable(context: Context?, databaseHelper: SignalDatabase) : Dat
       .readToSingleObject { it.getLong(0) }
   }
 
+  /** Date of the oldest message in a thread, used as the approximate creation date of a group. */
+  fun getOldestMessageTimestamp(threadId: Long): Long? {
+    return readableDatabase
+      .select(DATE_RECEIVED)
+      .from(TABLE_NAME)
+      .where("$THREAD_ID = ?", threadId)
+      .limit(1)
+      .orderBy("$DATE_RECEIVED ASC")
+      .run()
+      .readToSingleObject { it.getLong(0) }
+  }
+
   @VisibleForTesting
   fun deleteGroupStoryReplies(parentStoryId: Long) {
     writableDatabase
