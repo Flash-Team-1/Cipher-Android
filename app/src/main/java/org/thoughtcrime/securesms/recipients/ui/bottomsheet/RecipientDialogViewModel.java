@@ -95,14 +95,16 @@ final class RecipientDialogViewModel extends ViewModel {
         GroupTable.MemberLevel       memberLevel    = group.memberLevel(r);
         boolean                      inGroup        = memberLevel.isInGroup();
         boolean                      recipientAdmin = memberLevel == GroupTable.MemberLevel.ADMINISTRATOR;
+        boolean                      recipientOwner = group.isOwner(r);
         DecryptedGroup               decryptedGroup = group.getHasV2GroupProperties() ? group.requireV2GroupProperties().getDecryptedGroup() : null;
         AccessControl.AccessRequired linkAccess     = decryptedGroup != null && decryptedGroup.accessControl != null ? decryptedGroup.accessControl.addFromInviteLink
                                                                                                                      : AccessControl.AccessRequired.UNKNOWN;
         boolean                      isLinkActive   = linkAccess == AccessControl.AccessRequired.ANY || linkAccess == AccessControl.AccessRequired.ADMINISTRATOR;
 
-        return new AdminActionStatus(active && inGroup && localAdmin,
+        // The owner (group creator) can't be removed or demoted by other admins.
+        return new AdminActionStatus(active && inGroup && localAdmin && !recipientOwner,
                                      active && inGroup && localAdmin && !recipientAdmin,
-                                     active && inGroup && localAdmin && recipientAdmin,
+                                     active && inGroup && localAdmin && recipientAdmin && !recipientOwner,
                                      isLinkActive);
       });
     } else {
