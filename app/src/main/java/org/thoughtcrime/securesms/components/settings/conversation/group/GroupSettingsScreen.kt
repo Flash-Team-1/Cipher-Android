@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -131,6 +132,15 @@ fun GroupSettingsScreen(
           onEditClick = { onEvent(GroupSettingsEvent.EditGroupDescriptionClicked) },
           onViewClick = { onEvent(GroupSettingsEvent.ViewGroupDescriptionClicked) }
         )
+      }
+
+      if (state.ownerName != null && state.createdAt != null) {
+        item {
+          GroupCreatedBy(
+            ownerName = state.ownerName,
+            createdAt = state.createdAt
+          )
+        }
       }
     } else if (state.legacyGroupState != LegacyGroupState.NONE) {
       item {
@@ -253,6 +263,7 @@ private fun LazyListScope.membershipSection(
     MemberRow(
       recipient = member.recipient,
       isAdmin = member.isAdmin,
+      isOwner = member.isOwner,
       memberLabel = memberLabel,
       showAddMemberLabel = canSetMemberLabel && memberLabel == null,
       onClick = { onEvent(GroupSettingsEvent.MemberClicked(member.recipient.id)) },
@@ -466,6 +477,28 @@ private fun GroupDescription(
 }
 
 @Composable
+private fun GroupCreatedBy(
+  ownerName: String,
+  createdAt: Long,
+  modifier: Modifier = Modifier
+) {
+  val context = LocalContext.current
+  val createdDate = remember(createdAt) {
+    android.text.format.DateFormat.getMediumDateFormat(context).format(java.util.Date(createdAt))
+  }
+
+  Text(
+    text = stringResource(R.string.GroupSettings_created_by, ownerName, createdDate),
+    style = MaterialTheme.typography.bodySmall,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textAlign = TextAlign.Start,
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(horizontal = 32.dp, vertical = 4.dp)
+  )
+}
+
+@Composable
 private fun LegacyGroupNotice(
   legacyGroupState: LegacyGroupState,
   onLearnMoreClick: () -> Unit,
@@ -548,6 +581,7 @@ private fun MemberSectionHeader(
 private fun MemberRow(
   recipient: Recipient,
   isAdmin: Boolean,
+  isOwner: Boolean,
   memberLabel: StyledMemberLabel?,
   showAddMemberLabel: Boolean,
   onClick: () -> Unit,
@@ -589,9 +623,9 @@ private fun MemberRow(
         }
       }
 
-      if (isAdmin) {
+      if (isOwner || isAdmin) {
         Text(
-          text = stringResource(R.string.GroupRecipientListItem_admin),
+          text = stringResource(if (isOwner) R.string.GroupRecipientListItem_owner else R.string.GroupRecipientListItem_admin),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(start = 16.dp)
